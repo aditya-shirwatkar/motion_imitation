@@ -27,6 +27,7 @@ from mpc_controller import locomotion_controller
 from mpc_controller import openloop_gait_generator
 from mpc_controller import raibert_swing_leg_controller
 from mpc_controller import torque_stance_leg_controller
+# from mpc_controller import torque_stance_leg_controller_crocoddyl as torque_stance_leg_controller
 
 #uncomment the robot of choice
 #from mpc_controller import laikago_sim as robot_sim
@@ -69,7 +70,7 @@ _STANCE_DURATION_SECONDS = [
 # Trotting
 _DUTY_FACTOR = [0.6] * 4
 _INIT_PHASE_FULL_CYCLE = [0.9, 0, 0, 0.9]
-_MAX_TIME_SECONDS = 50
+_MAX_TIME_SECONDS = 300
 
 _INIT_LEG_STATE = (
     gait_generator_lib.LegState.SWING,
@@ -164,7 +165,7 @@ def _run_example(max_time=_MAX_TIME_SECONDS):
   else:
      p = bullet_client.BulletClient(connection_mode=pybullet.GUI)    
          
-  
+
   p.configureDebugVisualizer(p.COV_ENABLE_GUI,0)
   p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
   
