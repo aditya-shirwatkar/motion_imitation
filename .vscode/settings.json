@@ -1,0 +1,4 @@
+{
+    "ros.distro": "noetic",
+    "python.analysis.typeCheckingMode": "off"
+}
