@@ -73,7 +73,7 @@ class TorqueStanceLegController(leg_controller.LegController):
       num_legs: int = 4,
       friction_coeffs: Sequence[float] = (0.45, 0.45, 0.45, 0.45),
       qp_solver = convex_mpc.QPOASES,
-      mpc_method = 'rf'
+      mpc_method = 'cvx'
   ):
     """Initializes the class.
 
@@ -181,30 +181,30 @@ class TorqueStanceLegController(leg_controller.LegController):
     Xd[3:6, :] = np.linspace(desired_com_velocity, desired_com_velocity, _PLANNING_HORIZON_STEPS).T
     Xd[6:15, :] = euler_to_rot_flat(np.linspace((0., 0., com_roll_pitch_yaw[2]), desired_com_roll_pitch_yaw, _PLANNING_HORIZON_STEPS)).T
     Xd[15:18, :] = np.linspace(desired_com_angular_velocity, desired_com_angular_velocity, _PLANNING_HORIZON_STEPS).T
-    fz_unit = foot_contact_state*self._body_mass*9.8/(foot_contact_state.sum() + 1e-6)
-    self.Ud[[2,5,8,11], :] = np.array([fz_unit for _ in range(_PLANNING_HORIZON_STEPS)]).T
+    # fz_unit = foot_contact_state*self._body_mass*9.8/(foot_contact_state.sum() + 1e-6)
+    # self.Ud[[2,5,8,11], :] = np.array([fz_unit for _ in range(_PLANNING_HORIZON_STEPS)]).T
 
-    # if self._step_mpc % self._cvx_freq == 0:
-    #   p.submitProfileTiming("predicted_contact_forces")
-    #   predicted_contact_forces = self._cpp_mpc.compute_contact_forces(
-    #       [0],  #com_position
-    #       np.asarray(self._state_estimator.com_velocity_body_frame,
-    #                 dtype=np.float64),  #com_velocity
-    #       np.array(com_roll_pitch_yaw, dtype=np.float64),  #com_roll_pitch_yaw
-    #       # Angular velocity in the yaw aligned world frame is actually different
-    #       # from rpy rate. We use it here as a simple approximation.
-    #       np.asarray(self._robot.GetBaseRollPitchYawRate(),
-    #                 dtype=np.float64),  #com_angular_velocity
-    #       foot_contact_state,  #foot_contact_states
-    #       np.array(self._robot.GetFootPositionsInBaseFrame().flatten(),
-    #               dtype=np.float64),  #foot_positions_base_frame
-    #       self._friction_coeffs,  #foot_friction_coeffs
-    #       desired_com_position,  #desired_com_position
-    #       desired_com_velocity,  #desired_com_velocity
-    #       desired_com_roll_pitch_yaw,  #desired_com_roll_pitch_yaw
-    #       desired_com_angular_velocity  #desired_com_angular_velocity
-    #   )
-    #   self.Ud = -np.array(predicted_contact_forces).reshape((12, _PLANNING_HORIZON_STEPS), order='F')
+    if self._step_mpc % self._cvx_freq == 0:
+      p.submitProfileTiming("predicted_contact_forces")
+      predicted_contact_forces = self._cpp_mpc.compute_contact_forces(
+          [0],  #com_position
+          np.asarray(self._state_estimator.com_velocity_body_frame,
+                    dtype=np.float64),  #com_velocity
+          np.array(com_roll_pitch_yaw, dtype=np.float64),  #com_roll_pitch_yaw
+          # Angular velocity in the yaw aligned world frame is actually different
+          # from rpy rate. We use it here as a simple approximation.
+          np.asarray(self._robot.GetBaseRollPitchYawRate(),
+                    dtype=np.float64),  #com_angular_velocity
+          foot_contact_state,  #foot_contact_states
+          np.array(self._robot.GetFootPositionsInBaseFrame().flatten(),
+                  dtype=np.float64),  #foot_positions_base_frame
+          self._friction_coeffs,  #foot_friction_coeffs
+          desired_com_position,  #desired_com_position
+          desired_com_velocity,  #desired_com_velocity
+          desired_com_roll_pitch_yaw,  #desired_com_roll_pitch_yaw
+          desired_com_angular_velocity  #desired_com_angular_velocity
+      )
+      self.Ud = -np.array(predicted_contact_forces).reshape((12, _PLANNING_HORIZON_STEPS), order='F')
     #######################################################
 
     r_body = self._robot.GetFootPositionsInBaseFrame().astype(np.float64).T
@@ -253,9 +253,9 @@ class TorqueStanceLegController(leg_controller.LegController):
     # print(Xt)
     # print(Xd)
     # print(Ud)
-    print('dU ', np.reshape(res[:12], (12,1), order='F').flatten())
+    # print('dU ', np.reshape(res[:12], (12,1), order='F').flatten())
     # print('X last ', np.reshape(res[-12:], (12,1), order='F').flatten())
-    print(contact_forces)
+    # print(contact_forces)
     # exit()
     action = {}
     for leg_id, force in contact_forces.items():
