@@ -461,7 +461,12 @@ class SimpleRobot(object):
     pos,orn = self.pybullet_client.getBasePositionAndOrientation(
         self.quadruped)
     return orn
-    
+
+  def GetTrueBasePosition(self):
+    pos,orn = self.pybullet_client.getBasePositionAndOrientation(
+        self.quadruped)
+    return pos
+
   def TransformAngularVelocityToLocalFrame(self, angular_velocity, orientation):
     """Transform the angular velocity from world frame to robot's frame.
 
